@@ -9,5 +9,7 @@ public class SpecialityConfiguration : IEntityTypeConfiguration<Speciality>
     public void Configure(EntityTypeBuilder<Speciality> builder)
     {
         builder.ToTable("Specialities");
+        //Excluye en la consulta todos las especialidades eliminadas
+        builder.HasQueryFilter(s => !s.Deleted);
     }
 }

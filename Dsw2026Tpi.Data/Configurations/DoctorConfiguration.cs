@@ -9,5 +9,7 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
     public void Configure(EntityTypeBuilder<Doctor> builder)
     {
         builder.ToTable("Doctors");
+        //Excluye en la consulta todos los doctores eliminados
+        builder.HasQueryFilter(d => !d.Deleted);
     }
 }

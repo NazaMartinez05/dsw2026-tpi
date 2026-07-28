@@ -6,4 +6,7 @@ public abstract class EntityBase(Guid? id = null)
 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    //Eliminación lógica
+    public bool Deleted { get; private set; }
+    public void MarkAsDeleted() => Deleted = true;
 }
