@@ -12,7 +12,8 @@ namespace Dsw2026Tpi.Data.Configurations
         public void Configure(EntityTypeBuilder<Appointment> builder)
         {
             builder.ToTable("Appointments");
-            builder.HasQueryFilter(a => !a.Deleted);
+            builder.HasQueryFilter(a => !a.Deleted);// filtro de borrado logico 
+            builder.HasIndex(a => a.AvailabilitySlotId).IsUnique(); //regla RN03, no se signe el mismo horario a dos turnos distintos
         }
     }
 }
