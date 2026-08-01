@@ -61,4 +61,24 @@ public class AppointmentsController : ControllerBase
         }           
 
     }
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchAppointmetns(
+        [FromQuery] Guid? specialityId,
+        [FromQuery] Guid? doctorId,
+        [FromQuery] string? dni,
+        [FromQuery] DateTime? date,
+        [FromQuery] int pageSize =10,
+        [FromQuery] int pageIndex=1)
+    {
+        try
+        {
+            var result = await _appointmentService.SearchAppointmentAsync(
+                specialityId, doctorId, dni, date, pageSize, pageIndex);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new {message = ex.Message});
+        }
+    }
 }

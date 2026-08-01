@@ -126,4 +126,42 @@ public class AppointmentService : IAppointmentService
         }
         return new AppointmentModel.PaginatedSearchResponse(pageSize, pageIndex, total, dataList);   
     }
+    public async Task<AppointmentModel.PaginatedSearchResponse> SearchAppointmentAsync(
+        Guid? specialityId, Guid? doctorId, string? dni, DateTime? date, int pageSize = 10, int pageIndex = 1)
+    {
+        var query = _context.Appointments
+            .Include(a => a.Patient)
+            .Include(a => a.AvailabilitySlots)
+                .ThenInclude(slot => slot.Doctor)
+                    .ThenInclude(doc => doc.Speciality)
+            .Where(a => a.Status == AppointmentStatus.Booked);
+        if (specialityId.HasValue)
+        {
+            query = query.Where(a => a.AvailabilitySlots.Doctor.SpecialityId == specialityId.Value);
+        }
+        if (doctorId.HasValue)
+        {
+            query = query.Where(a => a.AvailabilitySlots.DoctorId == doctorId.Value);
+        }
+        if (date.HasValue)
+        {
+            var targetDate = DateOnly.FromDateTime(date.Value);
+            query = query.Where(a => a.AvailabilitySlots.SlotDate == targetDate);
+        }
+        int total = await query.CountAsync();
+        var appointments = await query
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        var dataList = new List<AppointmentModel.SearchResponse>();
+        foreach (var a in appointments)
+        {
+            dataList.Add(new AppointmentModel.SearchResponse(
+                a.AvailabilitySlots.Doctor.Speciality.Name,
+                a.AvailabilitySlots.Doctor.Name,
+                a.AvailabilitySlots.StartTime.ToString()
+                ));
+        }
+        return new AppointmentModel.PaginatedSearchResponse(pageSize, pageIndex, total, dataList);
+    }
 }
