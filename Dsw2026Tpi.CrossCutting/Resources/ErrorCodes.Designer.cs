@@ -79,6 +79,24 @@ namespace Dsw2026Tpi.CrossCutting.Resources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Datos de disponibilidad no válidos.
+        /// </summary>
+        public static string AVAILABILITY_INVALID {
+            get {
+                return ResourceManager.GetString("AVAILABILITY_INVALID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Los horarios indicados se solapan para el mismo médico.
+        /// </summary>
+        public static string AVAILABILITY_OVERLAP {
+            get {
+                return ResourceManager.GetString("AVAILABILITY_OVERLAP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a La entidad {0} no se encontró.
         /// </summary>
         public static string ENTITY_NOTFOUND {

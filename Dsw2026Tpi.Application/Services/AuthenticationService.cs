@@ -68,7 +68,7 @@ public class AuthenticationService : IAuthenticationService
             throw new ValidationException(ErrorCodes.PATIENT_LOGIN_INVALID, nameof(ErrorCodes.PATIENT_LOGIN_INVALID))
                 .WithDetail("dni", "invalid_format");
 
-        // Busca el paciente por DNI (identificador de negocio único)
+        // Busca el paciente por DNI 
         var patient = await _persistence.First<Patient>(p => p.Dni == request.Dni);
 
         if (patient is null)
@@ -87,7 +87,7 @@ public class AuthenticationService : IAuthenticationService
                 throw new ConflictException(nameof(ErrorCodes.REGISTER_USER_CONFLICT), ErrorCodes.REGISTER_USER_CONFLICT)
                     .WithDetail(createResult.Errors.Select(e => (e.Code, e.Description)));
 
-            _ = await _userManager.AddToRoleAsync(newUser, Roles.Patient);
+            var a = await _userManager.AddToRoleAsync(newUser, Roles.Patient);
 
             patient = new Patient(request.Dni, request.Email, userId: newUser.Id);
             patient = await _persistence.Add(patient);
