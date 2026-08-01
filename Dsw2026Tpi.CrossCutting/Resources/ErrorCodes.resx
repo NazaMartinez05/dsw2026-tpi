@@ -123,6 +123,12 @@
   <data name="AUTHORIZATION_FAILED" xml:space="preserve">
     <value>Se requieren permisos para la operación solicitada</value>
   </data>
+  <data name="AVAILABILITY_INVALID" xml:space="preserve">
+    <value>Datos de disponibilidad no válidos</value>
+  </data>
+  <data name="AVAILABILITY_OVERLAP" xml:space="preserve">
+    <value>Los horarios indicados se solapan para el mismo médico</value>
+  </data>
   <data name="ENTITY_NOTFOUND" xml:space="preserve">
     <value>La entidad {0} no se encontró</value>
   </data>

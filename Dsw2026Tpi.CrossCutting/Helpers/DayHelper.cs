@@ -5,7 +5,7 @@ using System.Text;
 namespace Dsw2026Tpi.CrossCutting.Helpers
 {
     public static class DayHelper
-    {
+    {        
         // Acepta con y sin tilde para no depender de cómo tipee el frontend
         private static readonly Dictionary<string, DayOfWeek> Map = new(StringComparer.OrdinalIgnoreCase)
         {

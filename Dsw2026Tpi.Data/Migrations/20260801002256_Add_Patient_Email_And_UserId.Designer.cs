@@ -4,6 +4,7 @@ using Dsw2026Tpi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dsw2026Tpi.Data.Migrations
 {
     [DbContext(typeof(Dsw2026TpiDbContext))]
-    partial class Dsw2026TpiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260801002256_Add_Patient_Email_And_UserId")]
+    partial class Add_Patient_Email_And_UserId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,8 +106,7 @@ namespace Dsw2026Tpi.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DoctorId", "Year", "Month", "DayOfWeek", "StartTime", "EndTime")
-                        .IsUnique();
+                    b.HasIndex("DoctorId");
 
                     b.ToTable("AvailabilityRules", (string)null);
                 });
@@ -136,10 +138,8 @@ namespace Dsw2026Tpi.Data.Migrations
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -148,8 +148,7 @@ namespace Dsw2026Tpi.Data.Migrations
 
                     b.HasIndex("AvailabilityRuleId");
 
-                    b.HasIndex("DoctorId", "SlotDate", "StartTime")
-                        .IsUnique();
+                    b.HasIndex("DoctorId");
 
                     b.ToTable("AvailabilitySlots", (string)null);
                 });
@@ -284,7 +283,7 @@ namespace Dsw2026Tpi.Data.Migrations
                     b.HasOne("Dsw2026Tpi.Domain.Entities.Doctor", "Doctor")
                         .WithMany()
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Doctor");
@@ -294,13 +293,12 @@ namespace Dsw2026Tpi.Data.Migrations
                 {
                     b.HasOne("Dsw2026Tpi.Domain.Entities.AvailabilityRule", "AvailabilityRule")
                         .WithMany()
-                        .HasForeignKey("AvailabilityRuleId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("AvailabilityRuleId");
 
                     b.HasOne("Dsw2026Tpi.Domain.Entities.Doctor", "Doctor")
                         .WithMany()
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("AvailabilityRule");
