@@ -14,6 +14,8 @@ namespace Dsw2026Tpi.Data.Configurations
             builder.ToTable("Patients");
             builder.HasQueryFilter(p => !p.Deleted);
             builder.HasIndex(p => p.Dni).IsUnique();
+            builder.HasIndex(p => p.Email).IsUnique();
+            builder.HasIndex(p => p.UserId).IsUnique();
         }
     }
 }
