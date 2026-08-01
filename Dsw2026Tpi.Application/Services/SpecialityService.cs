@@ -50,6 +50,10 @@ public class SpecialityService : ISpecialityService
         var speciality = await _persistence.GetById<Speciality>(id)
             ?? throw new EntityNotFoundException(nameof(Speciality));
 
+        var existing = await _persistence.First<Speciality>(s => s.Name == request.Name && s.Id != id);
+        if (existing is not null)
+            throw new ConflictException("SPECIALITY_NAME_CONFLICT", $"Ya existe una especialidad con el nombre '{request.Name}'");
+
         speciality.Update(request.Name, request.Description);
         await _persistence.Update(speciality);
 
