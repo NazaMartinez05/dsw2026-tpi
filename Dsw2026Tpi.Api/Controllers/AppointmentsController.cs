@@ -44,4 +44,21 @@ public class AppointmentsController : ControllerBase
             return BadRequest(new { message = ex.Message});
         }
     }
+    [HttpGet]
+    public async Task<IActionResult> GetAppointmentsByDate(
+        [FromQuery] DateTime date,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int pageIndex = 1)
+    {
+        try
+        {
+            var result = await _appointmentService.GetAppointmentsByDateAsync(date, pageSize, pageIndex);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }           
+
+    }
 }

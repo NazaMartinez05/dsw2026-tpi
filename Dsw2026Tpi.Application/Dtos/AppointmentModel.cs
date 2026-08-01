@@ -32,5 +32,16 @@ public class AppointmentModel
         Guid AvailabilitySlotId,
         string Reason,
         string Status
-        );
+    );
+    public record SearchResponse(
+        string Speciality,
+        string Doctor,
+        string AvailableTime
+    );
+    public record PaginatedSearchResponse(
+        int PageSize,
+        int PageIndex,
+        int Total,
+        List<SearchResponse> data
+    );
 }

@@ -3,6 +3,7 @@ using Dsw2026Tpi.Application.Interfaces;
 using Dsw2026Tpi.Data;
 using Dsw2026Tpi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 
 namespace Dsw2026Tpi.Application.Services;
 
@@ -95,5 +96,34 @@ public class AppointmentService : IAppointmentService
         }
         appointment.Status = AppointmentStatus.Cancelled;
         await _context.SaveChangesAsync();
+    }
+    public async Task<AppointmentModel.PaginatedSearchResponse> GetAppointmentsByDateAsync(DateTime date, int pageSize=10, int pageIndex=1)
+    {
+        var targetDate=DateOnly.FromDateTime(date);
+        var query = _context.Appointments
+            .Include(a => a.AvailabilitySlots)
+                .ThenInclude(slot => slot.Doctor)
+                    .ThenInclude(doc => doc.Speciality)
+            .Where(a => a.Status == AppointmentStatus.Booked &&
+                        a.AvailabilitySlots.SlotDate == targetDate);
+
+        int total = await query.CountAsync();
+
+        var appointments = await query
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var dataList= new List<AppointmentModel.SearchResponse>();
+        foreach (var a in appointments)
+        {
+            dataList.Add(new AppointmentModel.SearchResponse(
+                a.AvailabilitySlots.Doctor.Speciality.Name,
+                a.AvailabilitySlots.Doctor.Name,
+                a.AvailabilitySlots.StartTime.ToString()
+                ));
+
+        }
+        return new AppointmentModel.PaginatedSearchResponse(pageSize, pageIndex, total, dataList);   
     }
 }
