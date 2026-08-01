@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Dsw2026Tpi.Api.Controllers
 {
-    [Route("api")]
+    [Route("api/availabilities")]
+    [Authorize(Policy = Policies.AdminPolicy)]
+
     public class AvailabilityController : AppController
     {
         private readonly IAvailabilityService _service;
@@ -16,8 +18,7 @@ namespace Dsw2026Tpi.Api.Controllers
             _service = service;
         }
 
-        [HttpPost("availabilities")]
-        [Authorize(Policy = Policies.AdminPolicy)]
+        [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] AvailabilityModel.Request request)
@@ -26,8 +27,7 @@ namespace Dsw2026Tpi.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPut("availabilities")]
-        [Authorize(Policy = Policies.AdminPolicy)]
+        [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Replace([FromBody] AvailabilityModel.Request request)
