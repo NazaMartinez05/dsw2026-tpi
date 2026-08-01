@@ -33,6 +33,10 @@ public class SpecialityService : ISpecialityService
     {
         Validate(request);
 
+        var existing = await _persistence.First<Speciality>(s => s.Name == request.Name);
+        if (existing is not null)
+            throw new ConflictException("SPECIALITY_NAME_CONFLICT", $"Ya existe una especialidad con el nombre '{request.Name}'");
+
         var speciality = new Speciality(request.Name, request.Description);
         await _persistence.Add(speciality);
 
