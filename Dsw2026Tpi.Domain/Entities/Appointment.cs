@@ -13,7 +13,7 @@ namespace Dsw2026Tpi.Domain.Entities
         public Guid PatientId { get; init; }
         public Patient? Patient { get; private set; }
         public string Reason { get; init; }
-        public AppointmentStatus Status { get; private set; }
+        public AppointmentStatus Status { get; set; }
         public DateTime? CancelledAt { get; private set; }
         public DateTime? AttendedAt { get; private set; }
 

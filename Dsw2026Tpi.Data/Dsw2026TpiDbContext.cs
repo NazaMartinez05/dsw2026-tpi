@@ -11,6 +11,9 @@ public class Dsw2026TpiDbContext: DbContext
     {
     }
     public DbSet<Appointment> Appointments { get; set; }
+    public DbSet<Doctor> Doctors { get; set; }
+    public DbSet<Patient> Patients { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

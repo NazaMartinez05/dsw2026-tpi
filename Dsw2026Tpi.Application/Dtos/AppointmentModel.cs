@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Dsw2026Tpi.Domain.Entities;
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
@@ -7,17 +9,28 @@ namespace Dsw2026Tpi.Application.Dtos;
 
 public class AppointmentModel
 {
-    //DTO de entrada (Request)
-    public record Request( //se usa record porque es inmutable y su proposito es transportar datos de forma rapida y segura 
-        [Required(ErrorMessage = "El paciente es obligatorio")] Guid PatientId,
-        [Required(ErrorMessage= "El medico es obligatorio")] Guid DoctorId,
-        [Required(ErrorMessage= "El horario es obligatorio")] Guid AvailabilitySlotId,
-        [Required(ErrorMessage = "El motivo es obligario")][MinLength(5)] string Reason
+    public record Request(
+        Guid DoctorId,
+        Guid AvailabilitySlotId,
+        PatientDto Patient,
+        string Reason
     );
-    //DTO de salida (Response)
+    public record PatientDto(
+        long Dni
+    );
     public record Response(
         Guid Id,
-        string Status,
-        string Message
+        Guid DcotorId,
+        Guid AvailabilitySlotId,
+        long PatientDni,
+        string Reason,
+        string Status
     );
+    public record PatientAppointmentResponse(
+        Guid Id,
+        Guid DoctorId,
+        Guid AvailabilitySlotId,
+        string Reason,
+        string Status
+        );
 }
