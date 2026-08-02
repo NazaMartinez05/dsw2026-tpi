@@ -101,6 +101,7 @@ public class AppointmentService : IAppointmentService
     {
         var targetDate=DateOnly.FromDateTime(date);
         var query = _context.Appointments
+            .Include(a => a.Patient)
             .Include(a => a.AvailabilitySlots)
                 .ThenInclude(slot => slot.Doctor)
                     .ThenInclude(doc => doc.Speciality)
@@ -118,11 +119,21 @@ public class AppointmentService : IAppointmentService
         foreach (var a in appointments)
         {
             dataList.Add(new AppointmentModel.SearchResponse(
-                a.AvailabilitySlots.Doctor.Speciality.Name,
-                a.AvailabilitySlots.Doctor.Name,
-                a.AvailabilitySlots.StartTime.ToString()
-                ));
-
+                a.Id,
+                a.Status.ToString(),
+                new AppointmentModel.PatientSearchDto(
+                    long.Parse(a.Patient.Dni),
+                    a.Patient.FullName
+                ),
+                new AppointmentModel.DoctorSearchDto(
+                    a.AvailabilitySlots.DoctorId,
+                    a.AvailabilitySlots.Doctor.Name,
+                    new AppointmentModel.SpecialtySearchDto(
+                        a.AvailabilitySlots.Doctor.SpecialityId.GetValueOrDefault(),
+                        a.AvailabilitySlots.Doctor.Speciality.Name
+                    )
+                 )
+           ));     
         }
         return new AppointmentModel.PaginatedSearchResponse(pageSize, pageIndex, total, dataList);   
     }
@@ -157,10 +168,21 @@ public class AppointmentService : IAppointmentService
         foreach (var a in appointments)
         {
             dataList.Add(new AppointmentModel.SearchResponse(
-                a.AvailabilitySlots.Doctor.Speciality.Name,
-                a.AvailabilitySlots.Doctor.Name,
-                a.AvailabilitySlots.StartTime.ToString()
-                ));
+                a.Id,
+                a.Status.ToString(),
+                new AppointmentModel.PatientSearchDto(
+                    long.Parse(a.Patient.Dni),
+                    a.Patient.FullName
+                ),
+                new AppointmentModel.DoctorSearchDto(
+                    a.AvailabilitySlots.DoctorId,
+                    a.AvailabilitySlots.Doctor.Name,
+                    new AppointmentModel.SpecialtySearchDto(
+                        a.AvailabilitySlots.Doctor.SpecialityId.GetValueOrDefault(),
+                        a.AvailabilitySlots.Doctor.Speciality.Name
+                    )
+                 )
+           ));
         }
         return new AppointmentModel.PaginatedSearchResponse(pageSize, pageIndex, total, dataList);
     }

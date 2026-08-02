@@ -34,9 +34,23 @@ public class AppointmentModel
         string Status
     );
     public record SearchResponse(
-        string Speciality,
-        string Doctor,
-        string AvailableTime
+        Guid AppointmentsId,
+        string AppointmentsStatus,
+        PatientSearchDto Patient,
+        DoctorSearchDto Doctor
+    );
+    public record PatientSearchDto(
+        long Dni,
+        string Fullname
+    );
+    public record DoctorSearchDto(
+        Guid DcotorId,
+        string Name,
+        SpecialtySearchDto Speciality
+    );
+    public record SpecialtySearchDto(
+        Guid SpecialityId,
+        string Name
     );
     public record PaginatedSearchResponse(
         int PageSize,
