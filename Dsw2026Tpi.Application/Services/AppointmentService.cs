@@ -105,7 +105,7 @@ public class AppointmentService : IAppointmentService
         var query = _context.Appointments
             .Include(a => a.Patient)
             .Include(a => a.AvailabilitySlots)
-                .ThenInclude(slot => slot.Doctor)
+                .ThenInclude(slot => slot!.Doctor!)
                     .ThenInclude(doc => doc.Speciality)
             .Where(a => a.Status == AppointmentStatus.Booked);
 
@@ -125,8 +125,8 @@ public class AppointmentService : IAppointmentService
                 a.Id,
                 a.Status.ToString(),
                 new AppointmentModel.PatientSearchDto(
-                    long.Parse(a.Patient.Dni),
-                    a.Patient.FullName
+                    long.Parse(a!.Patient!.Dni),
+                    a!.Patient!.FullName!
                 ),
                 availabilitySlots
            ));     
@@ -141,19 +141,19 @@ public class AppointmentService : IAppointmentService
         var query = _context.Appointments
             .Include(a => a.Patient)
             .Include(a => a.AvailabilitySlots)
-                .ThenInclude(slot => slot.Doctor)
+                .ThenInclude(slot => slot!.Doctor!)
                     .ThenInclude(doc => doc.Speciality)
             .Where(a => a.Status == AppointmentStatus.Booked);
         if (specialityId.HasValue)
         {
-            query = query.Where(a => a.AvailabilitySlots.Doctor.SpecialityId == specialityId.Value);
+            query = query.Where(a => a.AvailabilitySlots!.Doctor!.SpecialityId == specialityId.Value);
         }
         if (doctorId.HasValue)
         {
-            query = query.Where(a => a.AvailabilitySlots.DoctorId == doctorId.Value);
+            query = query.Where(a => a.AvailabilitySlots!.DoctorId == doctorId.Value);
         }
 
-        query = query.Where(a => a.AvailabilitySlots.SlotDate == targetDate);
+        query = query.Where(a => a.AvailabilitySlots!.SlotDate == targetDate);
 
         int total = await query.CountAsync();
         var appointments = await query
@@ -161,15 +161,15 @@ public class AppointmentService : IAppointmentService
             .Take(pageSize)
             .ToListAsync();
         var dataList = new List<AppointmentModel.SearchResponse>();
-        List<AvailabilitySlots> availabilitySlots = [.. _context.AvailabilitySlots.Where(x => x.SlotDate == targetDate && x.Id == a.AvailabilitySlotId)];
+        List<AvailabilitySlots> availabilitySlots = [.. _context.AvailabilitySlots.Where(x => x.SlotDate == targetDate)];
         foreach (var a in appointments)
         {
             dataList.Add(new AppointmentModel.SearchResponse(
                 a.Id,
                 a.Status.ToString(),
                 new AppointmentModel.PatientSearchDto(
-                    long.Parse(a.Patient.Dni),
-                    a.Patient.FullName
+                    long.Parse(a!.Patient!.Dni),
+                    a!.Patient!.FullName!
                 ),
                 availabilitySlots
            ));
