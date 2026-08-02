@@ -97,16 +97,17 @@ public class AppointmentService : IAppointmentService
         appointment.Status = AppointmentStatus.Cancelled;
         await _context.SaveChangesAsync();
     }
-    public async Task<AppointmentModel.PaginatedSearchResponse> GetAppointmentsByDateAsync(DateTime date, int pageSize=10, int pageIndex=1)
+
+    public async Task<AppointmentModel.PaginatedSearchResponse> GetAppointmentsByDateAsync(DateTime date, int pageSize = 10, int pageIndex = 1)
     {
-        var targetDate=DateOnly.FromDateTime(date);
+        var targetDate = DateOnly.FromDateTime(date);
+
         var query = _context.Appointments
             .Include(a => a.Patient)
             .Include(a => a.AvailabilitySlots)
                 .ThenInclude(slot => slot.Doctor)
                     .ThenInclude(doc => doc.Speciality)
-            .Where(a => a.Status == AppointmentStatus.Booked &&
-                        a.AvailabilitySlots.SlotDate == targetDate);
+            .Where(a => a.Status == AppointmentStatus.Booked);
 
         int total = await query.CountAsync();
 
@@ -115,9 +116,11 @@ public class AppointmentService : IAppointmentService
             .Take(pageSize)
             .ToListAsync();
 
-        var dataList= new List<AppointmentModel.SearchResponse>();
+        var dataList = new List<AppointmentModel.SearchResponse>();
+
+        List<AvailabilitySlots> availabilitySlots = [.. _context.AvailabilitySlots.Where(x => x.SlotDate == targetDate)];
         foreach (var a in appointments)
-        {
+        {    
             dataList.Add(new AppointmentModel.SearchResponse(
                 a.Id,
                 a.Status.ToString(),
@@ -125,21 +128,16 @@ public class AppointmentService : IAppointmentService
                     long.Parse(a.Patient.Dni),
                     a.Patient.FullName
                 ),
-                new AppointmentModel.DoctorSearchDto(
-                    a.AvailabilitySlots.DoctorId,
-                    a.AvailabilitySlots.Doctor.Name,
-                    new AppointmentModel.SpecialtySearchDto(
-                        a.AvailabilitySlots.Doctor.SpecialityId.GetValueOrDefault(),
-                        a.AvailabilitySlots.Doctor.Speciality.Name
-                    )
-                 )
+                availabilitySlots
            ));     
         }
         return new AppointmentModel.PaginatedSearchResponse(pageSize, pageIndex, total, dataList);   
     }
     public async Task<AppointmentModel.PaginatedSearchResponse> SearchAppointmentAsync(
-        Guid? specialityId, Guid? doctorId, string? dni, DateTime? date, int pageSize = 10, int pageIndex = 1)
+        Guid? specialityId, Guid? doctorId, string? dni, DateTime date, int pageSize = 10, int pageIndex = 1)
     {
+        var targetDate = DateOnly.FromDateTime(date);
+
         var query = _context.Appointments
             .Include(a => a.Patient)
             .Include(a => a.AvailabilitySlots)
@@ -154,17 +152,16 @@ public class AppointmentService : IAppointmentService
         {
             query = query.Where(a => a.AvailabilitySlots.DoctorId == doctorId.Value);
         }
-        if (date.HasValue)
-        {
-            var targetDate = DateOnly.FromDateTime(date.Value);
-            query = query.Where(a => a.AvailabilitySlots.SlotDate == targetDate);
-        }
+
+        query = query.Where(a => a.AvailabilitySlots.SlotDate == targetDate);
+
         int total = await query.CountAsync();
         var appointments = await query
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
         var dataList = new List<AppointmentModel.SearchResponse>();
+        List<AvailabilitySlots> availabilitySlots = [.. _context.AvailabilitySlots.Where(x => x.SlotDate == targetDate && x.Id == a.AvailabilitySlotId)];
         foreach (var a in appointments)
         {
             dataList.Add(new AppointmentModel.SearchResponse(
@@ -174,14 +171,7 @@ public class AppointmentService : IAppointmentService
                     long.Parse(a.Patient.Dni),
                     a.Patient.FullName
                 ),
-                new AppointmentModel.DoctorSearchDto(
-                    a.AvailabilitySlots.DoctorId,
-                    a.AvailabilitySlots.Doctor.Name,
-                    new AppointmentModel.SpecialtySearchDto(
-                        a.AvailabilitySlots.Doctor.SpecialityId.GetValueOrDefault(),
-                        a.AvailabilitySlots.Doctor.Speciality.Name
-                    )
-                 )
+                availabilitySlots
            ));
         }
         return new AppointmentModel.PaginatedSearchResponse(pageSize, pageIndex, total, dataList);

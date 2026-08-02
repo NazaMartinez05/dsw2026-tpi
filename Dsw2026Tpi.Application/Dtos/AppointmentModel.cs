@@ -37,7 +37,7 @@ public class AppointmentModel
         Guid AppointmentsId,
         string AppointmentsStatus,
         PatientSearchDto Patient,
-        DoctorSearchDto Doctor
+        List<AvailabilitySlots> AvailabilitySlots
     );
     public record PatientSearchDto(
         long Dni,
