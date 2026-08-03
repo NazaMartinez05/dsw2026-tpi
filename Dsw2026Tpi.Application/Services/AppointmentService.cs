@@ -1,5 +1,6 @@
 ﻿using Dsw2026Tpi.Application.Dtos;
 using Dsw2026Tpi.Application.Interfaces;
+using Dsw2026Tpi.CrossCutting.Exceptions;
 using Dsw2026Tpi.Data;
 using Dsw2026Tpi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -16,56 +17,56 @@ public class AppointmentService : IAppointmentService
     }
     public async Task<AppointmentModel.Response> CreateAppointmentAsync(AppointmentModel.Request request)
     {
+        var validation = new ValidationException();
+
         if (string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Length < 5)
-        {
-            throw new Exception("Motivo obligartorio, debe contener al menos 5 caracteres.");
-        }
+            validation.WithDetail(nameof(request.Reason), "El motivo es obligatorio y debe contener al menos 5 caracteres");
+
         string dniString = request.Patient.Dni.ToString();
         if (dniString.Length < 7 || dniString.Length > 10)
-        {
-            throw new Exception("El DNI debe contener entre 7 y 10 dígitos");
-        }
+            validation.WithDetail("patient.dni", "El DNI debe contener entre 7 y 10 dígitos");
+
+        if (validation.Error.Details.Count > 0) throw validation;
+
         bool doctorExists = await _context.Doctors.AnyAsync(d => d.Id == request.DoctorId);
         if (!doctorExists)
-        {
-            throw new Exception("El medico seleccionado no existe");
-        }
-        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Dni == dniString);
-        if (patient == null)
-        {
-            throw new Exception("El paciente no esta registrado en el sistema");
-        }
+            throw new ConflictException("ENTITY_NOTFOUND", "El doctor ID no existe")
+                .WithDetail("availabilitySlotId", "slot_unavailable");
+
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Dni == dniString) ?? throw new ConflictException("ENTITY_NOTFOUND", "El paciente no se encuentra registrado")
+                .WithDetail("availabilitySlotId", "slot_unavailable");
+
         bool isSlotTaken = await _context.Appointments
             .AnyAsync(a => a.AvailabilitySlotId == request.AvailabilitySlotId);
         if (isSlotTaken)
-        {
-            throw new Exception("El horario seleccionado no se encuentra disponible");
-        }
-        var newAppointment = new Appointment(
-            request.AvailabilitySlotId,
-            patient.Id,
-            request.Reason
-        );
-        _context.Appointments.Add(newAppointment);
+            throw new ConflictException("APPOINTMENT_CONFLICT", "El horario seleccionado ya se encuentra reservado")
+                .WithDetail("availabilitySlotId", "slot_unavailable");
+
+        var slot = await _context.AvailabilitySlots.FirstOrDefaultAsync(s => s.Id == request.AvailabilitySlotId);
+        if (slot == null)
+            throw new EntityNotFoundException(nameof(AvailabilitySlots));
+
+        var appointment = new Appointment(slot.Id, patient.Id, request.Reason);
+
+        slot.MarkAsDeleted();
+
+        _context.Appointments.Add(appointment);
         await _context.SaveChangesAsync();
 
         return new AppointmentModel.Response(
-            newAppointment.Id,
-            request.DoctorId,
-            newAppointment.AvailabilitySlotId,
-            request.Patient.Dni,
-            newAppointment.Reason,
-            "BOOKED"
-        );
+            appointment.Id,
+            appointment.AvailabilitySlotId,
+            appointment.Patient?.Dni!,
+            appointment.Reason,
+            appointment.Status.ToString());
     }
     public async Task<List<AppointmentModel.PatientAppointmentResponse>> GetPatientAppointmentsAsync(long dni)
     {
         string dniString = dni.ToString();
         var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Dni == dniString);
         if (patient == null)
-        {
-            throw new Exception("Paciente no registrado en el sistema");
-        }
+            throw new EntityNotFoundException(nameof(Patient));
+
         var activeAppointments = await _context.Appointments
             .Where(a => a.PatientId == patient.Id && a.Status == AppointmentStatus.Booked)
             .ToListAsync();
@@ -87,13 +88,12 @@ public class AppointmentService : IAppointmentService
     {
         var appointment = await _context.Appointments.FindAsync(id);
         if (appointment == null)
-        {
-            throw new Exception("El turno seleccionado no existe.");
-        }
+            throw new EntityNotFoundException(nameof(Appointment));
+
         if (appointment.Status != AppointmentStatus.Booked)
-        {
-            throw new Exception("Solo se puede cancelar turnos que esten en estado de reservado.");
-        }
+            throw new ConflictException("APPOINTMENT_STATUS_CONFLICT", "Solo se pueden cancelar turnos que estén en estado Reservado")
+                .WithDetail("status", "invalid_status_for_cancellation");
+
         appointment.Status = AppointmentStatus.Cancelled;
         await _context.SaveChangesAsync();
     }

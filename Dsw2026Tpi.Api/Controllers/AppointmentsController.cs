@@ -16,6 +16,7 @@ public class AppointmentsController : AppController
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateAppointment([FromBody] AppointmentModel.Request request)
     {
         var response = await _appointmentService.CreateAppointmentAsync(request);
@@ -24,52 +25,34 @@ public class AppointmentsController : AppController
     }
 
     [HttpGet("patient")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPatientAppointments([FromQuery] long dni)
     {
-        try
-        {
-            var appointments = await _appointmentService.GetPatientAppointmentsAsync(dni);
-            return Ok(appointments);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message});
-        }
+        var appointments = await _appointmentService.GetPatientAppointmentsAsync(dni);
+        return Ok(appointments);
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CancelAppointment(Guid id)
     {
-        try
-        {
-            await _appointmentService.CancelAppointmentAsync(id);
-            return Ok("ok");
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message});
-        }
+       await _appointmentService.CancelAppointmentAsync(id);
+       return Ok("ok");
     }
 
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAppointmentsByDate(
         [FromQuery] DateTime date,
         [FromQuery] int pageSize = 10,
         [FromQuery] int pageIndex = 1)
     {
-        try
-        {
-            var result = await _appointmentService.GetAppointmentsByDateAsync(date, pageSize, pageIndex);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }           
-
+        var result = await _appointmentService.GetAppointmentsByDateAsync(date, pageSize, pageIndex);
+        return Ok(result);       
     }
 
     [HttpGet("search")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SearchAppointmetns(
         [FromQuery] Guid? specialityId,
         [FromQuery] Guid? doctorId,
@@ -78,15 +61,8 @@ public class AppointmentsController : AppController
         [FromQuery] int pageSize =10,
         [FromQuery] int pageIndex=1)
     {
-        try
-        {
-            var result = await _appointmentService.SearchAppointmentAsync(
+        var result = await _appointmentService.SearchAppointmentAsync(
                 specialityId, doctorId, dni, date, pageSize, pageIndex);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new {message = ex.Message});
-        }
+        return Ok(result);
     }
 }

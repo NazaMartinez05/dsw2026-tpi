@@ -20,9 +20,8 @@ public class AppointmentModel
     );
     public record Response(
         Guid Id,
-        Guid DcotorId,
         Guid AvailabilitySlotId,
-        long PatientDni,
+        string PatientDni,
         string Reason,
         string Status
     );
